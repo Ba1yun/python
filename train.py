@@ -12,11 +12,11 @@ data_transform=transforms.Compose([
 ])
 #加载训练数据集   pytorch已经有了需要加载进来
 train_dataset=MNIST(root='./data',train=True,transform=data_transform,download=True) #训练集下载下来了
-train_dataloader=DataLoader(dataset=train_dataset,batch_size=16,shuffle=True, num_workers=0)
+train_dataloader=DataLoader(dataset=train_dataset,batch_size=16,shuffle=True, num_workers=0)#训练数据加载器
 #加载测试数据集
 test_dataset=datasets.MNIST(root='./data',train=False,transform=data_transform,download=True)
-print(len(test_dataset))
-test_dataloader=DataLoader(dataset=test_dataset,batch_size=16,shuffle=True, num_workers=0)
+#print(len(test_dataset))
+test_dataloader=DataLoader(dataset=test_dataset,batch_size=16,shuffle=True, num_workers=0)#测试数据加载器
 
 #如果有显卡就转到GPU
 device="cuda" if torch.cuda.is_available() else "cpu"
@@ -28,7 +28,7 @@ loss_fun=nn.CrossEntropyLoss()
 #定义一个优化器
 optimizer=torch.optim.SGD(model.parameters(),lr=1e-3,momentum=0.9)  #le是学习率
 #学习率，每隔10轮，变为原来的0.1
-lr_scheduler=lr_scheduler.StepLR(optimizer,step_size=10,gamma=1)
+lr_scheduler=lr_scheduler.StepLR(optimizer,step_size=10,gamma=0.1)
 #训练函数
 def train(dataloader,modle,loss_fun,optimizer):   #传入上述的数据集，模型，损失函数，优化器
     loss,current,n=0,0,0
@@ -88,3 +88,20 @@ for i in range(epoch):
         # print('save best model')
     torch.save(model.state_dict(),'./save_model.pth')   #保存
     print('Done')
+
+
+'''
+1.nn是卷积神经网络的基网络框架里面包括了卷积操作激活函数等一系列操作
+2.lr_scheduler：学习率是指对前向传播得到的误差的利用率，因为反向传播也就是梯度下降是根据误差来开始的误差越大收敛速度越快但不稳定
+所以一般这个学习率是随着迭代次数的增加而减少，一开始学习率大一点然后越到后面越稳定收敛效果最好，常见学习率轮数减缓、指数减缓、分数减缓
+3.torchvision.datasets,transforms，torchvision独立于torch，需要单独安装，主要提供三个内容（1.models如典型的AlexNet、VGG、ResNet）
+（2.数据集加载，继承与torch.utils.data.Dataset如：MNIST、coco、imagenet）,(3.transforms：数据预处理包括Tensor，pil,image)
+4.batch_size:就是一次读取图片的多少，批量读取大小。
+5.shuffle:是否打乱，True/false
+6.num_workers=0,多少个子线程用于加载数据,默认是0,表示只在主线程加载数据
+7.transforms.Compose，就是把图像预处理步骤合在一起
+8.import as的引用方法
+9.transforms.ToTensor()：预处理将图片转化成Tensor格式，并归一到0-1之间
+10.root=./data表示保存到当前目录下的data文件夹
+11.step_size：（学习率减缓的一种）代表每隔多少迭代次数进行一次lr*gamma,若step_size=10，gamma=0.1代表迭代10此次学习率就降低原来的0.1倍
+'''
